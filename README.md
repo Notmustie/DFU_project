@@ -1,9 +1,7 @@
 # The Label Provenance Problem in DFU Severity Grading
 ## Validating Tissue-Derived Labels, Leakage-Free Evaluation, and Tissue-Mapped Explainability
 
-**Author:** Mustapha Nasser (ID 211002042)
-**Institution:** American International University Bangladesh (AIUB)
-**Course:** CSC 5210
+**Author:** Mustapha Nasser (ID 25-93863-3)
 
 ---
 
