@@ -1,0 +1,139 @@
+\documentclass[journal,10pt]{IEEEtran}
+
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{booktabs}
+\usepackage{url}
+\usepackage[hidelinks]{hyperref}
+\usepackage{textcomp}
+\usepackage{bm}
+
+\graphicspath{{figures/}}
+
+\begin{document}
+
+\input{sec_front}
+
+% ---------------------------------------------------------------------
+% FIGURE 1 — pipeline overview (full width, top of page)
+% ---------------------------------------------------------------------
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{fig_pipeline.pdf}
+\caption{End-to-end pipeline. Stage A resolves photograph and patient
+identity from the union of filename and pixel evidence. Stage B derives
+severity labels by colour clustering. Stage C validates those labels
+against four independent checks and consolidates them to one label per
+photograph. Stage D builds patient-grouped folds and verifies zero leakage
+on the image table. Stages E and F train identical architectures on derived
+and expert labels respectively, using the same folds and the same code.
+Stage G compares them, isolating label provenance as the only variable.}
+\label{fig:pipeline}
+\end{figure*}
+
+\input{sec_method}
+
+% ---------------------------------------------------------------------
+% FIGURE 2 — TGO-Net architecture (full width)
+% ---------------------------------------------------------------------
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{fig_architecture.pdf}
+\caption{TGO-Net architecture. A frozen EfficientNet-B0 produces a
+1{,}280-dimensional appearance feature. The Tissue Proportion Encoder lifts
+the three-dimensional tissue vector to a 64-dimensional embedding using
+layer normalisation, which is stable at small batch sizes where batch
+statistics over three inputs are not. The Cross-Modal Gate converts that
+embedding into a bounded per-channel multiplier scaled by a single learned
+scalar $\gamma$ initialised at zero, so the model begins as the frozen-CNN
+baseline and the tissue pathway must earn any influence. The CORAL head
+shares one weight vector across $K-1$ ordered biases, making rank
+consistency structural rather than loss-encouraged. Trainable parameters
+total 86{,}915, or 1.62\% of the full model.}
+\label{fig:arch}
+\end{figure*}
+
+\input{sec_results}
+
+% ---------------------------------------------------------------------
+% FIGURE 3 — validation checks
+% ---------------------------------------------------------------------
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{fig1_validation.pdf}
+\caption{Label validation. (a) Cohen's $\kappa$ between the derived grade
+and each reviewer, and between reviewers. Agreement with clinicians is
+indistinguishable from chance, while the two reviewers agree with each
+other at $\kappa = 0.254$, which bounds what any automated method could
+achieve. (b) Negative control on 543 lesion-free skin images: 60.2\%
+receive a severe grade where the correct value is zero. (c) Stability under
+augmentation: 61.7\% of photographs with more than one copy receive more
+than one grade across copies of themselves.}
+\label{fig:valid}
+\end{figure*}
+
+% ---------------------------------------------------------------------
+% FIGURE 4 — control comparison
+% ---------------------------------------------------------------------
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{fig2_control.pdf}
+\caption{Control comparison. The same frozen representation, the same
+linear head, the same folds and the same code, applied to derived colour
+labels and to expert clinician labels. The gap isolates label provenance
+and rules out model capacity, input resolution and training configuration
+as explanations.}
+\label{fig:control}
+\end{figure}
+
+% ---------------------------------------------------------------------
+% FIGURE 5 — gate scalar
+% ---------------------------------------------------------------------
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{fig3_gate.pdf}
+\caption{The learned gate scalar $\gamma$ on the infection task,
+estimated across five folds. Initialised at zero and free to grow, it
+settles at a mean of $-0.060$ with a standard deviation of $0.928$, so the
+confidence interval spans zero by a wide margin ($p = 0.90$). The network
+did not converge on a consistent use of the tissue input.}
+\label{fig:gate}
+\end{figure}
+
+% ---------------------------------------------------------------------
+% FIGURE 6 — class distribution
+% ---------------------------------------------------------------------
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{fig4_classes.pdf}
+\caption{Class distribution after consolidation to one label per
+photograph. (a) The derived labels place 65\% of photographs in the severe
+class, a composition no clinical cohort exhibits. (b) The mild class holds
+30 photographs in total, approximately six per fold, which is below the
+threshold at which a per-class estimate carries a usable confidence
+interval.}
+\label{fig:classes}
+\end{figure}
+
+% ---------------------------------------------------------------------
+% FIGURE 7 — Grad-CAM panel
+% ---------------------------------------------------------------------
+\begin{figure}[!t]
+\centering
+\includegraphics[width=\columnwidth]{gradcam_panel.pdf}
+\caption{Grad-CAM on held-out infection cases. Left: input image. Centre:
+activation heatmap. Right: the colour cluster map used as the alignment
+reference. The cluster masks are produced by the same $k$-means shown in
+Section VII-A to grade 60.2\% of lesion-free skin as severe, so alignment
+between the two measures agreement between procedures sharing a failure
+mode, not clinical correctness.}
+\label{fig:gradcam}
+\end{figure}
+
+\section*{Acknowledgment}
+The author thanks the two clinical reviewers who provided the independent
+severity assessments used in Section VII-A.
+
+\input{refs}
+
+\end{document}

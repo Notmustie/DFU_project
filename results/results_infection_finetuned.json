@@ -1,0 +1,10 @@
+{
+  "name": "fine-tuned (unfrozen backbone)",
+  "auroc": 0.8179631106540389,
+  "auprc": 0.8638192875217421,
+  "mcc": 0.4868780282056906,
+  "sensitivity": 0.7413604947253547,
+  "specificity": 0.754601226993865,
+  "n_units": 4542,
+  "balanced_acc": 0.7479808608596099
+}

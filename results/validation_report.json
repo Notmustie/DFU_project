@@ -1,0 +1,39 @@
+{
+  "check1_expert": {
+    "status": "confirmed",
+    "n_matched": 134,
+    "n_kaggle_excluded": 16,
+    "kappa_derived_vs_A": -0.025430934528870797,
+    "kappa_derived_vs_B": 0.03590873736064304,
+    "kappa_inter_rater": 0.2537204418880671,
+    "paper_recalibrated_kappa": 0.1534
+  },
+  "check2_negctrl": {
+    "status": "confirmed",
+    "n": 543,
+    "pct_severe": 60.22099447513812,
+    "mean_necrosis": 0.2224844972951197,
+    "max_necrosis": 0.56951904296875
+  },
+  "check3_stability": {
+    "status": "confirmed",
+    "n_multi_copy": 2818,
+    "n_inconsistent": 1739,
+    "pct_inconsistent": 61.710432931156845
+  },
+  "check4_plausibility": {
+    "status": "confirmed",
+    "mean_necrosis": 0.23087837922646684,
+    "pct_above_threshold": 63.13126201801437,
+    "dist_severe_pct": 63.13126201801437
+  },
+  "consolidation": {
+    "n_images": 9881,
+    "n_photographs": 3614,
+    "dist": {
+      "severe": 2349,
+      "moderate": 1235,
+      "mild": 30
+    }
+  }
+}

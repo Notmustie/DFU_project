@@ -1,0 +1,278 @@
+\section{Proposed Methodology}
+
+The pipeline comprises seven stages: identity resolution, label derivation,
+label validation, split construction, feature extraction, model training
+with ablation, and statistical analysis. Each stage writes an artefact
+consumed by the next, and each asserts its preconditions before running, so
+that a stage cannot silently operate on incomplete input.
+
+\subsection{Pipeline Overview}
+
+Fig.~\ref{fig:pipeline} shows the end-to-end dataflow. Two corpora enter
+stage A, where every image receives a photograph identifier and a patient
+identifier. Stage B derives severity labels on the first corpus. Stage C
+validates those labels and consolidates them to one label per photograph.
+Stage D constructs patient-grouped folds and verifies that no identity key
+spans a fold boundary. Stages E and F train models on the derived labels
+and on expert labels respectively, using the same folds and the same code.
+Stage G compares the two.
+
+For an image $I$, the forward pass through the model is
+
+\begin{equation}
+\begin{aligned}
+z    &= \phi_{\text{B0}}(I), \quad z \in \mathbb{R}^{1280}, \\
+p    &= \big(\rho_{\text{nec}}, \rho_{\text{sl}}, \rho_{\text{gran}}\big)
+        \in \Delta^{2}, \\
+e    &= \psi(p), \quad e \in \mathbb{R}^{64}, \\
+\tilde{z} &= z \odot \big(1 + \gamma \tanh(W_g e + b_g)\big), \\
+\eta &= \mathcal{H}(\tilde{z}),
+\end{aligned}
+\label{eq:forward}
+\end{equation}
+
+where $\phi_{\text{B0}}$ is a frozen EfficientNet-B0 backbone \cite{tan2019} with its
+classification head removed, $\psi$ is the Tissue Proportion Encoder,
+$\Delta^{2}$ is the two-dimensional probability simplex, $\odot$ denotes
+elementwise multiplication, $\gamma \in \mathbb{R}$ is a single learned
+scalar, and $\mathcal{H}$ is a task-specific head. Section V-E describes
+each component and Section V-F formalises them.
+
+\subsection{Severity Label Derivation}
+
+Because no public DFU corpus carries severity annotation, labels are
+derived from tissue composition. Each image is resized to $128 \times 128$
+and converted from RGB to CIE LAB, which separates luminance from
+chrominance and reduces the effect of illumination differences between
+sources. The wound pixel set is partitioned by $k$-means with $k = 3$,
+using four initialisations. Clusters are ordered by the $L^{*}$ coordinate
+of their centroids so that a given proportion index refers to the same
+quantity in every image, and are assigned to necrotic, slough and
+granulation tissue in ascending order of luminance, following the
+convention that necrotic tissue is darkest and granulation lightest.
+
+The tissue proportion for type $t$ is
+
+\begin{equation}
+\rho_t = \frac{|C_t|}{\sum_{j=1}^{3} |C_j|},
+\qquad \sum_t \rho_t = 1,
+\label{eq:props}
+\end{equation}
+
+where $C_t$ is the set of pixels assigned to cluster $t$. Severity is then
+assigned by threshold rules anchored to published grading descriptions:
+
+\begin{equation}
+s =
+\begin{cases}
+\text{severe}   & \text{if } \rho_{\text{nec}} \geq 0.20, \\[2pt]
+\text{mild}     & \text{if } \rho_{\text{gran}} \geq 0.67
+                   \ \wedge\ \rho_{\text{sl}} \leq 0.27, \\[2pt]
+\text{moderate} & \text{otherwise.}
+\end{cases}
+\label{eq:rule}
+\end{equation}
+
+Two implementation details are load-bearing. Reducing the number of
+$k$-means initialisations to one shifts individual proportions by up to
+0.166 relative to a ten-initialisation reference, which is the same order
+as the effect being measured, so four initialisations are retained.
+Ordering clusters by luminance is required because $k$-means returns
+clusters in arbitrary order; without it the proportion vector is
+meaningless across images.
+
+\subsection{Label Validation Protocol}
+
+A derived label is only useful if it recovers the quantity it claims to.
+Four checks are applied, each capable of failing independently.
+
+\emph{Expert agreement} compares derived grades against clinician review on
+a stratified sample, reporting Cohen's $\kappa$ against each reviewer and
+between reviewers. The inter-rater value is essential context: it bounds
+what agreement any automated method could plausibly achieve.
+
+\emph{Negative control} applies the identical derivation to images
+containing no ulcer. The correct necrotic fraction for intact skin is zero,
+so any severe grade is a false positive that the method cannot detect on
+wound images, where no reference value exists.
+
+\emph{Stability} groups images by source photograph and asks whether a
+photograph's own augmented copies receive the same grade. Augmentation does
+not change the clinical picture, so disagreement indicates that the label
+is determined by something other than wound appearance.
+
+\emph{Plausibility} compares the resulting class distribution against the
+composition of clinical cohorts.
+
+\subsection{Leakage-Free Evaluation Protocol}
+
+Public wound corpora are frequently distributed after augmentation, so a
+split over image files does not separate photographs. The protocol treats
+evaluation identity and split grouping as separate problems.
+
+Photograph identity is the union of two signals. Filenames encode the
+source photograph through export and augmentation suffixes, and pixel
+content is summarised by a perceptual hash made invariant to rotation and
+mirroring, then compared by Hamming distance rather than equality so that
+re-encoding does not split a photograph from its own copies. Neither
+signal alone suffices: hashing over-splits copies whose appearance
+diverges, and filenames are renumbered between exports. Two images
+therefore belong to the same photograph unit if they share either
+signal, computed as connected components over the union of both
+relations. Implementation details are given in the released notebooks.
+
+The split group is deliberately more conservative than the evaluation unit:
+patients joined by any shared content cluster are placed in the same group,
+including false-positive links, because an unnecessary merge costs less
+than a leak. Folds are stratified over these groups.
+
+Verification runs on the full image table rather than an aggregated table,
+across five keys: patient, photograph, unit, group and content cluster. An
+aggregated table hides patients dropped by first-match merges, and an
+earlier version of this check reported success while two patients genuinely
+spanned folds.
+
+Finally, predictions are made per image and averaged to one score per
+photograph before any metric is computed. Without this step a photograph
+with eight augmented copies contributes eight times and one with a single
+copy contributes once, which weights the test set toward heavily augmented
+cases.
+
+\subsection{TGO-Net Architecture}
+
+Fig.~\ref{fig:arch} shows the architecture. The tissue proportions computed
+during labelling are unused by a standard convolutional network, which sees
+only pixels. TGO-Net supplies them as a second input stream while keeping
+the backbone frozen, which keeps training feasible without sustained
+accelerator access and makes every reported figure a linear probe on fixed
+features rather than a tuned ceiling.
+
+\textbf{Tissue Proportion Encoder.} The three-dimensional proportion vector
+is lifted to a 64-dimensional embedding by a two-layer perceptron with GELU
+activation \cite{hendrycks2016} and layer normalisation \cite{ba2016}.
+Layer normalisation is used rather than batch normalisation because batch
+statistics over a three-dimensional input are unstable at small batch
+sizes. This component holds 2{,}432 parameters.
+
+\textbf{Cross-Modal Gate.} The embedding is converted into a per-channel
+multiplier on the frozen feature. The scalar $\gamma$ is initialised at
+zero, so at initialisation $\tilde{z} = z$ and the model is exactly the
+frozen-CNN baseline; the tissue pathway must earn any influence through
+training. This makes $\gamma$ a directly interpretable measure of how much
+the network relies on tissue composition relative to appearance. The
+hyperbolic tangent bounds each channel's scaling to
+$(1 - |\gamma|,\ 1 + |\gamma|)$. Multiplicative fusion is used rather than
+concatenation because a 64-dimensional signal concatenated to 1{,}280
+dimensions can be ignored through near-zero weights; the concatenation
+variant is retained as an ablation so that this choice is tested rather
+than asserted. This component holds 83{,}201 parameters.
+
+\textbf{Prediction heads.} For the three-class ordinal formulation the head
+is CORAL \cite{cao2020}: a single shared weight vector with $K-1$
+independent bias terms. Because the weight vector is shared and only the
+biases differ, the logits differ by a constant for every input and cannot
+cross, so the model is structurally incapable of asserting
+$P(y > \text{moderate}) > P(y > \text{mild})$. Rank consistency is
+guaranteed by the architecture rather than encouraged by the loss. For the
+binary formulation the head is a single logit.
+
+Total trainable parameters are 86{,}915 for the ordinal head and 86{,}914
+for the binary head, against 5{,}288{,}548 parameters in the frozen
+backbone, so 1.62\% of the model is trained.
+
+\subsection{Mathematical Formulation}
+
+The Tissue Proportion Encoder maps $p \in \Delta^{2}$ to $e$ by
+
+\begin{equation}
+e = \sigma_{\text{G}}\Big(
+    \mathrm{LN}\big(W_2\,
+    \sigma_{\text{G}}(\mathrm{LN}(W_1 p + b_1))
+    + b_2\big)\Big),
+\label{eq:encoder}
+\end{equation}
+
+where $W_1 \in \mathbb{R}^{32 \times 3}$,
+$W_2 \in \mathbb{R}^{64 \times 32}$, $\mathrm{LN}$ denotes layer
+normalisation and $\sigma_{\text{G}}$ the GELU nonlinearity.
+
+The Cross-Modal Gate produces a bounded per-channel modulation
+
+\begin{equation}
+g = \tanh(W_g e + b_g), \qquad
+\tilde{z} = z \odot (1 + \gamma g),
+\label{eq:gate}
+\end{equation}
+
+with $W_g \in \mathbb{R}^{1280 \times 64}$ and $\gamma \in \mathbb{R}$
+initialised at $0$. Because $g \in (-1, 1)^{1280}$, each channel of $z$ is
+scaled within $(1 - |\gamma|,\ 1 + |\gamma|)$, so a large $\gamma$ is
+required before the tissue stream can materially alter the representation.
+
+The CORAL head produces $K-1$ ordered logits from a shared projection
+
+\begin{equation}
+\eta_k = w^{\top} \tilde{z} + b_k, \qquad k = 1, \dots, K-1,
+\label{eq:coral}
+\end{equation}
+
+trained against binary targets $y_k = \mathbb{1}[y > k]$ with
+
+\begin{equation}
+\mathcal{L}_{\text{CORAL}} = -\sum_{k=1}^{K-1}
+\Big[ y_k \log \varsigma(\eta_k)
+    + (1 - y_k) \log\big(1 - \varsigma(\eta_k)\big) \Big],
+\label{eq:coralloss}
+\end{equation}
+
+where $\varsigma$ is the logistic function. The predicted class is
+$\hat{y} = \sum_{k} \mathbb{1}[\varsigma(\eta_k) > 0.5]$. For the binary
+task the objective is weighted cross-entropy
+
+\begin{equation}
+\mathcal{L}_{\text{BCE}} = -\big[ w^{+} y \log \varsigma(\eta)
+    + (1-y) \log(1 - \varsigma(\eta)) \big],
+\label{eq:bce}
+\end{equation}
+
+with $w^{+} = n_{-} / n_{+}$ computed on the training split of each fold.
+
+Where class imbalance is addressed by resampling, SMOTE \cite{chawla2002}
+is applied to the concatenated vector $[\,z \mid p\,]$ of the training
+split rather than to features alone. A convex combination of two points of
+$\Delta^{2}$ remains in $\Delta^{2}$, so interpolated tissue vectors stay
+valid proportions:
+
+\begin{equation}
+\tilde{p} = \lambda p_a + (1-\lambda) p_b \in \Delta^{2},
+\qquad \lambda \sim U(0,1).
+\label{eq:smote}
+\end{equation}
+
+\subsection{Explainability}
+
+Grad-CAM \cite{selvaraju2020} is computed on the last convolutional block.
+For class score $y^{c}$ and feature maps $A^{k}$,
+
+\begin{equation}
+\alpha^{c}_{k} = \frac{1}{Z}\sum_{i}\sum_{j}
+\frac{\partial y^{c}}{\partial A^{k}_{ij}},
+\qquad
+L^{c} = \mathrm{ReLU}\Big(\sum_{k} \alpha^{c}_{k} A^{k}\Big).
+\label{eq:gradcam}
+\end{equation}
+
+The fraction of activation falling inside a tissue cluster mask $M^{c}$ is
+
+\begin{equation}
+A^{c}_{\text{align}} =
+\frac{\sum_{ij} L^{c}_{ij} M^{c}_{ij}}{\sum_{ij} L^{c}_{ij}}.
+\label{eq:align}
+\end{equation}
+
+Because a cluster covering a larger share of the image absorbs more
+activation by area alone, we report the area-normalised lift
+$A^{c}_{\text{align}} / \bar{M}^{c}$, where $\bar{M}^{c}$ is the fraction
+of pixels in the mask. A lift of $1.0$ indicates attention proportional to
+cluster size and therefore no preferential targeting. Section VII-E states
+what this quantity can and cannot support.

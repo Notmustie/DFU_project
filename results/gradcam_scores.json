@@ -1,0 +1,15 @@
+{
+  "n_images": 16,
+  "holdout_fold": 0,
+  "mean_alignment": {
+    "necrotic-cluster": 0.39940714696444957,
+    "slough-cluster": 0.4024534672498703,
+    "granulation-cluster": 0.19813939605955966
+  },
+  "mean_lift": {
+    "granulation-cluster": 0.767,
+    "necrotic-cluster": 1.283,
+    "slough-cluster": 1.11
+  },
+  "caveat": "cluster masks derive from the same LAB k-means shown invalid in notebook 03 (86.3% of healthy skin graded severe, luminance ordering inverted). Alignment measures agreement between two procedures sharing a failure mode, not clinical correctness."
+}

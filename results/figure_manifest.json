@@ -1,0 +1,14 @@
+{
+  "figures": [
+    "fig1_validation.png",
+    "fig2_control.png",
+    "fig3_gate.png",
+    "fig4_classes.png"
+  ],
+  "tables": [
+    "table1_validation.csv",
+    "table2_control.csv",
+    "table3_ablation.csv"
+  ],
+  "missing_sources": []
+}

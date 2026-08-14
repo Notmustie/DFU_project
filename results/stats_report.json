@@ -1,0 +1,143 @@
+{
+  "missing_sources": [],
+  "infection": [
+    {
+      "configuration": "CNN only",
+      "auroc": 0.8123392027968596,
+      "ci_low": 0.79592,
+      "ci_high": 0.8328399999999998,
+      "fold_sd": 0.021055602579836078,
+      "n_folds": 5
+    },
+    {
+      "configuration": "+ tissue, concat",
+      "auroc": 0.8103190999637448,
+      "ci_low": 0.79688,
+      "ci_high": 0.8298,
+      "fold_sd": 0.018988733501737288,
+      "n_folds": 5
+    },
+    {
+      "configuration": "+ tissue, gated (TGO-Net)",
+      "auroc": 0.7929198814272471,
+      "ci_low": 0.7777800000000001,
+      "ci_high": 0.8158799999999999,
+      "fold_sd": 0.02261760376344053,
+      "n_folds": 5
+    }
+  ],
+  "tissue_test": [
+    {
+      "comparison": "+ tissue, concat",
+      "mean_diff": -0.0013399999999999857,
+      "p_value": 0.4225084412230542,
+      "ci": [
+        -0.004279999999999973,
+        0.0010000000000000009
+      ],
+      "n_folds": 5
+    },
+    {
+      "comparison": "+ tissue, gated (TGO-Net)",
+      "mean_diff": -0.01694,
+      "p_value": 0.0008649306510115215,
+      "ci": [
+        -0.020819999999999995,
+        -0.014279999999999982
+      ],
+      "n_folds": 5
+    }
+  ],
+  "gate_test": {
+    "mean": 0.08972000000000002,
+    "sd": 0.9012389503344826,
+    "p_value": 0.8518928036852205,
+    "per_fold": [
+      0.9462,
+      -0.9861,
+      1.0564,
+      0.4076,
+      -0.9755
+    ]
+  },
+  "severity": [
+    {
+      "name": "CNN only (softmax)",
+      "qwk": 0.24918193203792605,
+      "flag": null
+    },
+    {
+      "name": "CNN only (CORAL)",
+      "qwk": 0.0,
+      "flag": null
+    },
+    {
+      "name": "+ tissue, concat",
+      "qwk": 0.9458122998973993,
+      "flag": "circular: tissue input includes the label-generating variable; large QWK gain reflects that, not a learned clinical signal"
+    },
+    {
+      "name": "+ tissue, gated (TGO-Net)",
+      "qwk": 0.8954536897158154,
+      "flag": null
+    },
+    {
+      "name": "+ tissue, gated + SMOTE",
+      "qwk": 0.9074997503786509,
+      "flag": null
+    },
+    {
+      "name": "CNN only + SMOTE",
+      "qwk": 0.12903451091775697,
+      "flag": null
+    }
+  ],
+  "control_comparison": {
+    "severity_qwk_pixels_only": 0.24918193203792605,
+    "infection_auroc": 0.8123392027968596
+  },
+  "validation": {
+    "check1_expert": {
+      "status": "confirmed",
+      "n_matched": 134,
+      "n_kaggle_excluded": 16,
+      "kappa_derived_vs_A": -0.025430934528870797,
+      "kappa_derived_vs_B": 0.03590873736064304,
+      "kappa_inter_rater": 0.2537204418880671,
+      "paper_recalibrated_kappa": 0.1534
+    },
+    "check2_negctrl": {
+      "status": "confirmed",
+      "n": 543,
+      "pct_severe": 60.22099447513812,
+      "mean_necrosis": 0.2224844972951197,
+      "max_necrosis": 0.56951904296875
+    },
+    "check3_stability": {
+      "status": "confirmed",
+      "n_multi_copy": 2818,
+      "n_inconsistent": 1739,
+      "pct_inconsistent": 61.710432931156845
+    },
+    "check4_plausibility": {
+      "status": "confirmed",
+      "mean_necrosis": 0.23087837922646684,
+      "pct_above_threshold": 63.13126201801437,
+      "dist_severe_pct": 63.13126201801437
+    },
+    "consolidation": {
+      "n_images": 9881,
+      "n_photographs": 3614,
+      "dist": {
+        "severe": 2349,
+        "moderate": 1235,
+        "mild": 30
+      }
+    }
+  },
+  "holm_adjusted": {
+    "+ tissue, gated (TGO-Net)": 0.0025947919530345644,
+    "+ tissue, concat": 0.8450168824461084,
+    "gate gamma vs zero": 0.8518928036852205
+  }
+}

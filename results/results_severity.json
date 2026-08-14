@@ -1,0 +1,77 @@
+{
+  "configs": [
+    {
+      "name": "CNN only (softmax)",
+      "qwk": 0.24918193203792605,
+      "macro_f1": 0.46031171422346007,
+      "mae": 0.3898727172108467,
+      "severe_vs_rest_f1": 0.6986492780624126,
+      "n": 3614
+    },
+    {
+      "name": "CNN only (CORAL)",
+      "qwk": 0.0,
+      "macro_f1": 0.26261948683548547,
+      "mae": 0.35832872163807417,
+      "severe_vs_rest_f1": 0.7878584605064565,
+      "n": 3614
+    },
+    {
+      "name": "+ tissue, concat",
+      "qwk": 0.9458122998973993,
+      "macro_f1": 0.6953289227094829,
+      "mae": 0.027116768123962368,
+      "severe_vs_rest_f1": 0.993015873015873,
+      "n": 3614,
+      "interpretation_flag": "circular: tissue input includes the label-generating variable; large QWK gain reflects that, not a learned clinical signal"
+    },
+    {
+      "name": "+ tissue, gated (TGO-Net)",
+      "qwk": 0.8954536897158154,
+      "macro_f1": 0.6569037324425251,
+      "mae": 0.05174322080796901,
+      "severe_vs_rest_f1": 0.9770450751252087,
+      "n": 3614,
+      "gamma_per_fold": [
+        0.3547,
+        -0.3589,
+        0.3481,
+        -0.348,
+        0.355
+      ],
+      "gamma_mean": 0.07017741799354553,
+      "gamma_sd": 0.34592108239183134
+    },
+    {
+      "name": "+ tissue, gated + SMOTE",
+      "qwk": 0.9074997503786509,
+      "macro_f1": 0.7167779697848427,
+      "mae": 0.050359712230215826,
+      "severe_vs_rest_f1": 0.9852693602693603,
+      "n": 3614,
+      "gamma_per_fold": [
+        -0.4163,
+        0.4587,
+        0.4281,
+        -0.4281,
+        -0.4364
+      ],
+      "gamma_mean": -0.07880795598030091,
+      "gamma_sd": 0.42650396300866117
+    },
+    {
+      "name": "CNN only + SMOTE",
+      "qwk": 0.12903451091775697,
+      "macro_f1": 0.36486069355535294,
+      "mae": 0.42584394023242944,
+      "severe_vs_rest_f1": 0.742724995182116,
+      "n": 3614
+    }
+  ],
+  "n_photographs": 3614,
+  "class_counts": {
+    "mild": 30,
+    "moderate": 1235,
+    "severe": 2349
+  }
+}

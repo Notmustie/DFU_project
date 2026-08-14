@@ -1,0 +1,5 @@
+Cross-corpus overlap
+  Roboflow photographs : 9,269
+  DFUC photographs     : 4,570
+  shared               : 14
+  = 0.2% of Roboflow, 0.3% of DFUC
