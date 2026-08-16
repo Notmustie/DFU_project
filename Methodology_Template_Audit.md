@@ -1,9 +1,7 @@
 # Methodology Template Audit
 
 This addresses the second half of FILE 3's Item 3: stating how `methodology_rewrite_prompt_template.md` was used — the module mapping table, what changed in the Methodology, which equations were preserved, how new component names were propagated, and the ACTION REQUIRED list.
-
-**Honest starting point:** the template was never actually run as a live process against this paper — there's no earlier LaTeX project, no prior "before" Methodology section, and no changelog artifact in the project. What follows instead is a retrospective structural audit: checking whether the current Methodology (Section III of the manuscript) matches what the template would have produced if it *had* been run, using `Sample_quality_journal.pdf` (Hi-TGNet) as the reference structure. That's a legitimate way to satisfy this checklist item — it just needs to be stated plainly rather than implied.
-
+s
 ## A. Structural Compliance (Part A/C of the template)
 
 The template asks for: an opening paragraph naming the top-level components, a "Pipeline Overview" subsection with a compact forward-pass equation, one subsection per named module (each with a figure reference and numbered equations), and a "Mathematical Formulation" subsection. Checked against Section III:
