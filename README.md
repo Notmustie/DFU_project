@@ -1,5 +1,4 @@
 # Grading Diabetic Foot Ulcers from Colour Images: A Negative Result and its Diagnosis
-## Validating Tissue-Derived Labels, Leakage-Free Evaluation, and Tissue-Mapped Explainability
 
 **Author:** Mustapha Nasser (ID 25-93863-3)
 
