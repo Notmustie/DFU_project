@@ -1,6 +1,6 @@
-# Grading Diabetic Foot Ulcers from Colour Images: A Negative Result and its Diagnosis
+# Validity of Color-Derived Severity Labels for Diabetic Foot Ulcers: A Methodological Study
 
-**Author:** Mustapha Nasser (ID 25-93863-3)
+**Author:** Mustapha Nasser
 
 ---
 
