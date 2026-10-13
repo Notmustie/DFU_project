@@ -7,7 +7,7 @@
 **Affiliations:** Department of Computer Science, American International University-Bangladesh (AIUB), Dhaka, Bangladesh; Department of Computer Science and Engineering, Bangladesh University of Engineering and Technology, Dhaka, Bangladesh (M. H. Mahdi)
 
 **Status:** manuscript submitted to *Health Science Reports* (under review).
-**Archived release:** [Zenodo DOI, add after the first release]
+**Archived release:** [Zenodo DOI(https://doi.org/10.5281/zenodo.23335668)]
 
 ---
 
