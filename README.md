@@ -246,9 +246,8 @@ you download and use them.
 
 ## Licence
 
-Code: [MIT]. Derived labels, fold assignments and result files: [CC BY 4.0].
-See `LICENSE`. [Confirm that each source dataset's licence allows you to share labels
-derived from its images.]
+Code: [MIT]. Derived labels, fold assignments and result files: [CC BY 4.0]. See LICENSE.
+Source data keep their own terms. The DFUC 2024 images are listed as CC BY 4.0, so labels and figures derived from them carry attribution to the original creators. The Kaggle DFU dataset states no licence.
 
 ---
 
